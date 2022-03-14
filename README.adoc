@@ -1,0 +1,16 @@
+== Create Operator Project
+
+. Create a directory for the go operator and `cd` into it
++
+----
+mkdir $REPO_HOME/memcached-operator
+cd $REPO_HOME/memcached-operator
+----
++
+. Use the operator SDK to create operator scaffolding: 
++
+----
+operator-sdk init --domain example.com \
+    --repo github.com/example/memcached-operator \#<.>
+----
+<.> This refers to the go repo and is required when creating a project outside of $GOPATH/src, as scaffolded files require a valid module path
