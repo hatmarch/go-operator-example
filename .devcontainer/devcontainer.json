@@ -27,7 +27,9 @@
 	
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"golang.Go"
+		"golang.Go",
+		"asciidoctor.asciidoctor-vscode",
+		"davidanson.vscode-markdownlint",
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -50,6 +52,7 @@
 		"-v", "/var/run/docker.sock.raw:/var/run/docker.sock",
 		"-v", "${env:HOME}/.aws:/home/vscode/.aws",
 		"-v", "${env:HOME}/.gitconfig:/home/vscode/.gitconfig",
+		"-v", "${env:HOME}/.kube:/home/vscode/.kube",
 		"-u", "vscode",
 	],
 	"containerEnv": {
@@ -58,6 +61,8 @@
 		"REPO_HOME": "${containerWorkspaceFolder}",
 		"REPO_ROOT": "${containerEnv:REPO_HOME}",
 		"REPO_HOME_HOST": "${localWorkspaceFolder}",
+		// This is required to run the operator-sdk per here: Ensure you activate module support by running export GO111MODULE=on before using the SDK
+		"GO111MODULE": "on"
 	},
 	// Use 'otherPortsAttributes' to configure any ports that aren't configured using 'portsAttributes'.
 	// "otherPortsAttributes": {
