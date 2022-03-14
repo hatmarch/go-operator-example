@@ -16,3 +16,6 @@
 
 # ignore internal vscode workspaces
 .vscode/
+
+# ignore local configuration
+local-config
