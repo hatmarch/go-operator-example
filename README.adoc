@@ -1,3 +1,5 @@
+:imagesdir: images/
+
 == Connecting to Minikube cluster
 
 If you have made a minikube instance available externally, then you can setup your environment to work with that cluster.  There are some pre-requisites though
@@ -27,8 +29,59 @@ ssh-copy-id -i pass:[${PUBLIC_KEY_PATH}] pass:[${MINIKUBE_USER}@${MINIKUBE_HOST}
 pass:[${REPO_HOME}]/scripts/create-kubeconfig.sh pass:[${MINIKUBE_HOST}] pass:[${PRIVATE_KEY_PATH}] pass:[${MINIKUBE_USER}]
 ----
 
+== Existing Example
+
+There is a finished operator example of <<Create Operator Project,the create operator steps>> in the `$REPO_HOME/memcached-operator-example` directory.  You can run this locally or in your cluster.  Choose one of the following options:
+
+* <<Running Locally, Running Locally>>
+* <<Running on Cluster, Running on Cluster>>
+
+Finally, create a custom resource for your operator to act upon by running this command:
+----
+kubectl apply -n memcached-operator-system -f $REPO_HOME/memcached-operator-example/config/samples/cache_v1alpha1_memcached.yaml
+----
+
+
+=== Running Locally
+
+NOTE: If not debugging, you might need to first run `make install run`
+
+. Set any breakpoints you need to in the code (e.g. `memcached_controller.go` would be an interesting place to do this)
+. Go to the debug panel and select "Debug Controller Locally"
++
+image::debug_config.png[]
+
+=== Running on Cluster
+
+. Open the `Makefile` and make the following changes
+** `$IMAGE_TAG_BASE`: name of _your_ repo, registry, and image base name (e.g. docker.io/mhildema/memcached-operator-example)
+. Log into your docker registry
++
+----
+docker login
+----
++
+. Go to the example directory
++
+----
+cd $REPO_HOME/memcached-operator-example
+----
++
+. Run the following command to build the operator container and push it to your registry
++
+----
+make docker-build docker-push
+----
++
+. Now deploy everything onto the cluster
++
+----
+make deploy
+----
 
 == Create Operator Project
+
+This is adapated from the instructions link:https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/#implement-the-controller[here]
 
 . Create a directory for the go operator and `cd` into it
 +
@@ -71,7 +124,7 @@ type MemcachedStatus struct {
 <.> The CRD will have one field, `size` that represents the number of memcached replicas we want
 <.> This defines a list of nodes that will appear in the status field of the CR
 +
-. In the same file (`$REPO_HOME/memcached-operator/api/v1alpha1/memcached_types.go`) add the `+kubebuilder:subresource:status` marker to add a status subresource to the CRD manifest so that the controller can update the CR status without changing the rest of the CR object:
+. In the same file (`{$REPO_HOME}/memcached-operator/api/v1alpha1/memcached_types.go`) add the `+kubebuilder:subresource:status` marker to add a status subresource to the CRD manifest so that the controller can update the CR status without changing the rest of the CR object:
 +
 ----
 // Memcached is the Schema for the memcacheds API
@@ -92,6 +145,10 @@ make generate #<.>
 ----
 <.> The above makefile target will invoke the controller-gen utility to update the `api/v1alpha1/zz_generated.deepcopy.go` file to ensure our API’s Go type definitions implement the runtime.Object interface that all Kind types must implement.
 +
+. Implement the Controller: Open `${REPO_HOME}/memcached-operator/memcached_controller.go`.  This is the heart of the operator and implement the logic
+** You can copy in a working controller code from link:https://raw.githubusercontent.com/operator-framework/operator-sdk/latest/testdata/go/v3/memcached-operator/controllers/memcached_controller.go[here] and paste it into the file 
+** Find a discussion of the salient points of the code link:https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/#implement-the-controller[here]
++
 . Next we need to generate kubernetes manifests from the structs:
 +
 ----
@@ -99,4 +156,4 @@ make manifests #<.>
 ----
 <.> This makefile target will invoke controller-gen to generate the CRD manifests at `$REPO_HOME/memcached-operator/config/crd/bases/cache.example.com_memcacheds.yaml`
 +
-. 
+. Finally, follow the steps in <<Existing Example, Existing Example Section>> to either run locally or in the debugger (though note that you may have to change paths to match `$REPO_HOME/memcached-operator` where your operator exists)

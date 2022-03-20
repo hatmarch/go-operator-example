@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/memcached-operator/main.go",
+            "program": "${workspaceFolder}/memcached-operator-example/main.go",
 //            "args": [ "${input:container}" ],
             "env": {
                 // pass the local location of the kubeconfig file to the invocation
